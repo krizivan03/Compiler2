@@ -1,0 +1,33 @@
+a, b, c, d;
+    {
+        input a;
+        input b;
+        c = 10;
+    
+        IF c <> a
+        {
+            output b;
+        }
+    
+        IF c > 1
+        {
+            a = b + 900;
+            input d;
+            IF a > 10
+            {
+                output d;
+            }
+        }
+    
+        d = 0;
+        WHILE d < 4
+        {
+            c = a + d;
+            IF d > 1
+            {
+                output d;
+            }
+            d = d + 1;
+        }
+    }
+    1 2 3 4 5 6

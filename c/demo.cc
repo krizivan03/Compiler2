@@ -5,6 +5,7 @@
 #include <stdarg.h>
 #include <ctype.h>
 #include <string.h>
+#include <unordered_map>
 #include "compiler.h"
 #include "lexer.h"
 using namespace std;
@@ -34,8 +35,14 @@ void parseDefaultCase();
 void parseInputs();
 void parseNumList();
 
+
+unordered_map<string, int> m; // variable as a string, its location in mem as an int
+
 struct InstructionNode * parse_generate_intermediate_representation()
 {
+    next_available = 0;
+    next_input = 0;
+
     parseProgram();
     // Sample program for demonstration purpose only
     // Replace the following with a parser that reads the program from stdin &
@@ -126,7 +133,8 @@ struct InstructionNode * parse_generate_intermediate_representation()
     // mem[next_available] = 4;
     // next_available++;
 
-     struct InstructionNode * i1 = new InstructionNode;
+    struct InstructionNode * i1 = new InstructionNode;
+     
     // struct InstructionNode * i2 = new InstructionNode;
     // struct InstructionNode * i3 = new InstructionNode;
     // struct InstructionNode * i4 = new InstructionNode;
@@ -294,9 +302,10 @@ void parseVarSection(){
     parseIDList();
     expect(SEMICOLON);
 }
+
 void parseIDList(){
-    expect(ID);
-    Token t = lexer.peek(1);
+    Token t = expect(ID); m[t.lexeme] = next_available; mem[next_available++] = 0; // a, b, c, d;
+    t = lexer.peek(1);
     if(t.token_type == COMMA){
         expect(COMMA);
         parseIDList();
@@ -364,7 +373,13 @@ void parseExpr(){
 void parsePrimary(){
     Token t = lexer.peek(1);
     if (t.token_type==ID){  expect(ID); }
-    else    {   expect(NUM);    }
+    else    {   
+        t = expect(NUM);
+        if(m.find(t.lexeme) == m.end()){ // if its not there
+            m[t.lexeme] = next_available; // this is adding constants to Table "5", index
+             mem[next_available++] = stoi(t.lexeme);    //  adding the actual integer to the index of mem[]
+        }
+        }
 }
 void parseOp(){
     Token t = lexer.peek(1);
@@ -455,6 +470,9 @@ void parseNumList(){
         parseNumList(); 
     }
 }
-
+// Returns location in mem of variable
+int getLocation(string var){
+    return 0; 
+}
 
 /*----------------------------PARSER----------------------------*/
