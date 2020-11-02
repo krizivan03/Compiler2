@@ -136,6 +136,6 @@ int main()
 {
     struct InstructionNode * program;
     program = parse_generate_intermediate_representation();
-    // execute_program(program);
+    execute_program(program);
     return 0;
 }
