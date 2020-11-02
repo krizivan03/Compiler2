@@ -1,5 +1,9 @@
 a, b, c, d;
     {
+        FOR ( a = 0; a < 10; a = a + 1; )
+        {
+            output a;
+        }
         input a;
         input b;
         c = 10;

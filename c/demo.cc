@@ -306,17 +306,31 @@ struct InstructionNode * parseSwitchStmt(){
 }
 struct InstructionNode * parseForStmt(){
     struct InstructionNode * i;
-    expect(FOR); i->type = CJMP;
+    struct InstructionNode * c = new InstructionNode; initInst(c);
+    struct InstructionNode * i2;
+    struct InstructionNode * j = new InstructionNode; initInst(j); j->type = NOOP;
+    struct InstructionNode * jmp = new InstructionNode; initInst(jmp); jmp->type = JMP; 
+    struct InstructionNode *lastI;
+
+    expect(FOR); 
     expect(LPAREN);
-    parseAssignStmt();
-    expr *e = parseCondition();
-    i->cjmp_inst.condition_op = e->aC_OP;
-    i->cjmp_inst.operand1_index = m[e->LHS.lexeme];
-    i->cjmp_inst.operand2_index = m[e->RHS.lexeme];
+    i = parseAssignStmt(); 
+    expr *e = parseCondition(); c->type = CJMP; i->next = c;
+    c->cjmp_inst.condition_op = e->aC_OP;
+    c->cjmp_inst.operand1_index = m[e->LHS.lexeme];
+    c->cjmp_inst.operand2_index = m[e->RHS.lexeme];
+    c->cjmp_inst.target = j;
     expect(SEMICOLON);
-    parseAssignStmt();
+    i2 = parseAssignStmt(); i2->next = jmp; jmp->jmp_inst.target = c; jmp->next = j;
     expect(RPAREN);
-    parseBody();
+    // i->next = parseBody();
+    lastI = i; while (lastI->next!=NULL){ lastI = lastI->next; }
+    lastI->next = parseBody();
+    lastI = i; while (lastI->next!=NULL){ lastI = lastI->next; }
+    lastI->next = i2;
+    return i;
+
+    
 }
 void parseCaseList(){
     parseCase();
