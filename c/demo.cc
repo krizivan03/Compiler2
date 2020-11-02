@@ -30,9 +30,9 @@ expr *parseCondition();
 ConditionalOperatorType parseRelop();
 struct InstructionNode * parseSwitchStmt();
 struct InstructionNode * parseForStmt();
-void parseCaseList();
-void parseCase();
-void parseDefaultCase();
+struct InstructionNode *parseCaseList(Token t, struct InstructionNode *switchNoop);
+struct InstructionNode *parseCase(Token t, struct InstructionNode *switchNoop);
+struct InstructionNode *parseDefaultCase(Token t,struct InstructionNode * switchNoop);
 void parseInputs();
 void parseNumList();
 void initInst(struct InstructionNode *i);
@@ -294,15 +294,24 @@ ConditionalOperatorType parseRelop(){
     return aC_Op;
 }
 struct InstructionNode * parseSwitchStmt(){
+    struct InstructionNode * i;
+    struct InstructionNode * switchNoop = new InstructionNode; initInst(switchNoop); switchNoop->type = NOOP;
+    Token t;
     expect(SWITCH);
-    expect(ID);
+    t = expect(ID);
     expect(LBRACE);
-    parseCaseList();
-    Token t = lexer.peek(1);
+    i = parseCaseList(t,switchNoop);
+    struct InstructionNode *lastI = i; while (lastI->next!=NULL){ lastI = lastI->next; }
+
+    t = lexer.peek(1);
     if(t.token_type== DEFAULT){
-        parseDefaultCase();
-    }
+        lastI->next = parseDefaultCase(t,switchNoop);
+        while (lastI->next!=NULL){ lastI = lastI->next; }
+        lastI->next = switchNoop;
+    }else{lastI->next = switchNoop;}
+    
     expect(RBRACE);
+    return i;
 }
 struct InstructionNode * parseForStmt(){
     struct InstructionNode * i;
@@ -326,30 +335,45 @@ struct InstructionNode * parseForStmt(){
     // i->next = parseBody();
     lastI = i; while (lastI->next!=NULL){ lastI = lastI->next; }
     lastI->next = parseBody();
-    lastI = i; while (lastI->next!=NULL){ lastI = lastI->next; }
+    while (lastI->next!=NULL){ lastI = lastI->next; }
     lastI->next = i2;
     return i;
 
     
 }
-void parseCaseList(){
-    parseCase();
-    Token t = lexer.peek(1);
-    if(t.token_type== CASE){
-        parseCaseList();
-    }
+struct InstructionNode *parseCaseList(Token t, struct InstructionNode * switchNoop){ 
+    struct InstructionNode * i = parseCase(t, switchNoop);
+    struct InstructionNode *lastI = i; while (lastI->next!=NULL){ lastI = lastI->next; }
 
+    Token t2 = lexer.peek(1);
+    if(t2.token_type== CASE){
+        lastI->next = parseCaseList(t, switchNoop);
+    }else{lastI->next = NULL;}
+
+    return i;
 }
-void parseCase(){
+struct InstructionNode *parseCase(Token t,struct InstructionNode * switchNoop){
+    struct InstructionNode * i = new InstructionNode; initInst(i); i->type = CJMP;
+    struct InstructionNode * j = new InstructionNode; initInst(j); j->type = JMP; j->jmp_inst.target = switchNoop;
+    struct InstructionNode * noop = new InstructionNode; initInst(noop); noop->type = NOOP; // i->cjmp_inst.target = noop;
+    i->cjmp_inst.condition_op = CONDITION_NOTEQUAL;
+    i->cjmp_inst.operand1_index = m[t.lexeme];
+    
+    struct InstructionNode *lastI;
     expect(CASE);
-    expect(NUM);
+    Token t2 = parsePrimary();  /*expect(NUM);*/ i->cjmp_inst.operand2_index = m[t2.lexeme];
     expect(COLON);
-    parseBody();
+    i->cjmp_inst.target = parseBody();
+    lastI = i->cjmp_inst.target; while (lastI->next!=NULL){ lastI = lastI->next; }
+    lastI->next = j; j->next = noop;
+    return i;
 }
-void parseDefaultCase(){
+struct InstructionNode *parseDefaultCase(Token t,struct InstructionNode * switchNoop){
+    struct InstructionNode * i;
     expect(DEFAULT);
     expect(COLON);
-    parseBody();
+    i = parseBody();
+    // return i;
 }
 void parseInputs(){
     parseNumList();

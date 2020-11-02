@@ -1,37 +1,26 @@
-a, b, c, d;
+a, b,c;
     {
-        FOR ( a = 0; a < 10; a = a + 1; )
-        {
-            output a;
-        }
-        input a;
-        input b;
-        c = 10;
-    
-        IF c <> a
-        {
-            output b;
-        }
-    
-        IF c > 1
-        {
-            a = b + 900;
-            input d;
-            IF a > 10
-            {
-                output d;
+        a = 10;
+        b = 222;
+        c = 30;
+        SWITCH a {
+            CASE 1: {
+                output c;
             }
-        }
-    
-        d = 0;
-        WHILE d < 4
-        {
-            c = a + d;
-            IF d > 1
-            {
-                output d;
+            CASE 25: {
+                output a;
+                output b;
+                output c;
             }
-            d = d + 1;
+            CASE 101: {
+                output a;
+                output b;
+                output c;
+            }
+            
         }
+        
+        output b;
     }
-    1 2 3 4 5 6
+    4 7
+    
