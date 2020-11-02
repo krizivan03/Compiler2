@@ -227,6 +227,7 @@ struct InstructionNode * parseInputStmt(){
 struct InstructionNode * parseWhileStmt(){
     struct InstructionNode * i = new InstructionNode; initInst(i);
     struct InstructionNode * j = new InstructionNode; initInst(j); j->type = NOOP;
+    struct InstructionNode * jmp = new InstructionNode; initInst(jmp); jmp->type = JMP; jmp->jmp_inst.target = i; jmp->next = j;
     struct InstructionNode *lastI;
 
     expect(WHILE); i->type = CJMP;
@@ -239,7 +240,7 @@ struct InstructionNode * parseWhileStmt(){
     i->cjmp_inst.target = j;
 
     lastI = i; while (lastI->next!=NULL){ lastI = lastI->next; }
-    lastI->next = j;
+    lastI->next = jmp;
     
     return i;
 }
