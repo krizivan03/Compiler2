@@ -1,8 +1,4 @@
-/*
- * Copyright (C) Rida Bazzi, 2017
- *
- * Do not share this file with anyone
- */
+
 #include <cstdio>
 #include <cstdlib>
 #include <cstdarg>
